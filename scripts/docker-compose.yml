@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  db:
+    image: bdad0890a7c1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: anoma
+    ports:
+      - "5432:5432"
+  app:
+    build: ../
+    ports:
+      - "4000:4000"
+    environment:
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE:-EV0HaiTL8RP99iMrMHW7/zt7UWi2zxRaY3aIqIY35cT0tQHgc5JzZYas9YhRTOag}
+      - DATABASE_URL=ecto://postgres:postgres@db/anoma
+      - TWITTER_CLIENT_ID=twitter_client_id
+      - TWITTER_CLIENT_SECRET=twitter_client_secret
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
