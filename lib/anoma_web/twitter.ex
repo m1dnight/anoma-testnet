@@ -1,0 +1,148 @@
+defmodule AnomaWeb.Twitter do
+  require Logger
+
+  alias Anoma.Accounts
+  alias Anoma.Accounts.User
+
+  @twitter_api_url "https://api.twitter.com/2/oauth2/token"
+  @twitter_user_meta_data_url "https://api.twitter.com/2/users/me?user.fields=id,name,username,profile_image_url,description,public_metrics,verified"
+
+  @doc """
+  Creates or updates a user in the database with the user's meta data from twitter.
+  """
+  @spec create_or_update_user(user_meta_data()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def create_or_update_user(user_data) do
+    Accounts.create_or_update_user_with_twitter_data(user_data)
+  end
+
+  @doc """
+  Given the code and code verifier from the user, exchange them for an access
+  token.
+  """
+  @spec fetch_access_token(String.t(), String.t()) ::
+          {:ok, String.t()}
+          | {:error, :code_exchange_failed}
+          | {:error, :code_exchange_failed, String.t()}
+  def fetch_access_token(code, code_verifier) do
+    # fetch the application client id and secret from the environment
+    client_id = Application.get_env(:anoma, :twitter_client_id)
+    client_secret = Application.get_env(:anoma, :twitter_client_secret)
+
+    # construct the payload for the request
+    body = %{
+      code: code,
+      grant_type: "authorization_code",
+      client_id: client_id,
+      redirect_uri: "#{AnomaWeb.Endpoint.url()}/index.html",
+      code_verifier: code_verifier
+    }
+
+    # X requires Basic Auth with client credentials
+    credentials = Base.encode64("#{client_id}:#{client_secret}")
+
+    headers = [
+      {"Authorization", "Basic #{credentials}"},
+      {"Content-Type", "application/x-www-form-urlencoded"}
+    ]
+
+    # make the request to the X api
+    case HTTPoison.post(@twitter_api_url, URI.encode_query(body), headers) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
+        case Jason.decode(response_body) do
+          {:ok, %{"access_token" => access_token}} ->
+            {:ok, access_token}
+
+          {:ok, %{"error" => error}} ->
+            {:error, :code_exchange_failed, error}
+
+          _ ->
+            {:error, :code_exchange_failed}
+        end
+
+      {:ok, %HTTPoison.Response{status_code: _status_code, body: response_body}} ->
+        Logger.error("failed to exchange code for access token: #{response_body}")
+        {:error, :code_exchange_failed}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, :code_exchange_failed, reason}
+    end
+  end
+
+  @doc """
+  Given an access, token, fetch the user's meta data from the X api.
+  """
+  @type user_meta_data :: %{
+          data: %{
+            id: String.t(),
+            name: String.t(),
+            description: String.t(),
+            username: String.t(),
+            verified: boolean(),
+            public_metrics: %{
+              followers_count: number(),
+              following_count: number(),
+              tweet_count: number(),
+              listed_count: number(),
+              like_count: number(),
+              media_count: number()
+            },
+            profile_image_url: String.t()
+          }
+        }
+  @spec fetch_user_meta_data(String.t()) ::
+          {:ok, user_meta_data()}
+          | {:error, :failed_to_fetch_user_data}
+  def fetch_user_meta_data(access_token) do
+    cache =
+      {:ok,
+       %{
+         id: "1933171045675986944",
+         name: "thisisnotabotaccount",
+         description: "",
+         username: "thisisnota41858",
+         profile_image_url:
+           "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+         public_metrics: %{
+           followers_count: 0,
+           following_count: 1,
+           like_count: 0,
+           listed_count: 0,
+           media_count: 0,
+           tweet_count: 0
+         },
+         verified: false
+       }}
+
+    if false do
+      headers = [
+        {"Authorization", "Bearer #{access_token}"},
+        {"Content-Type", "application/json"}
+      ]
+
+      case HTTPoison.get(@twitter_user_meta_data_url, headers) do
+        {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
+          IO.inspect(response_body, label: "response body")
+          result = Jason.decode(response_body, keys: :atoms)
+
+          case result do
+            {:ok, %{data: user_data}} ->
+              {:ok, user_data}
+
+            {:error, _} ->
+              {:error, :failed_to_fetch_user_data}
+          end
+
+        {:ok, %HTTPoison.Response{status_code: _status_code, body: response_body}} ->
+          Logger.error("failed to fetch user data: #{response_body}")
+          {:error, :failed_to_fetch_user_data}
+
+        {:error, %HTTPoison.Error{reason: reason}} ->
+          Logger.error("failed to fetch user data: #{reason}")
+          {:error, :failed_to_fetch_user_data}
+      end
+      |> tap(&IO.inspect(&1, label: "fetch_user_meta_data"))
+    else
+      cache
+    end
+  end
+end

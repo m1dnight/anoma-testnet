@@ -1,0 +1,28 @@
+services:
+  app:
+    build: ../
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    environment:
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE:-D0FoSoHQ5iCyzdCI/+J5w5/0atuGKIyX54NUmRr9fbzuswNtBA+T2IgHFOEoOEp7XpSCGcKc7O9n3XdWpglsHw==}
+      - DATABASE_URL=ecto://postgres:postgres@db/anoma_dev
+      - TWITTER_CLIENT_ID=${TWITTER_CLIENT_ID}
+      - TWITTER_CLIENT_SECRET=${TWITTER_CLIENT_SECRET}
+      - PORT=${PORT:-4000}
+      - PHX_HOST=0.0.0.0
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=anoma_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
