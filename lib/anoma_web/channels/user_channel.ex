@@ -2,6 +2,7 @@ defmodule AnomaWeb.UserChannel do
   use AnomaWeb, :channel
 
   alias Anoma.Accounts
+  alias Anoma.Accounts.User
   alias AnomaWeb.Plugs.AuthPlug
 
   require Logger
@@ -16,6 +17,8 @@ defmodule AnomaWeb.UserChannel do
          {:ok, user} <- Accounts.get_user(user_id) do
       # the user in the token should be the same as the user id in the channel
       if "#{user_id}" == channel_user_id do
+        # subscribe to updates from the database
+        EctoWatch.subscribe({User, :updated}, user_id)
         {:ok, user, socket}
       else
         {:error, %{reason: "unauthorized"}}
@@ -28,8 +31,14 @@ defmodule AnomaWeb.UserChannel do
   end
 
   @impl true
-  def handle_in(msg, payload, socket) do
-    IO.inspect(binding(), label: "user channel handle_in")
+  def handle_in(_msg, _payload, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({{User, :updated}, %{id: user_id}}, socket) do
+    user = Accounts.get_user!(user_id)
+    push(socket, "profile_update", %{user: user})
     {:noreply, socket}
   end
 end

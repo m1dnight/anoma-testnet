@@ -11,6 +11,9 @@ defmodule Anoma.Accounts.User do
     field :points, :integer, default: 0
     field :eth_address, :string
 
+    # Fitcoin
+    field :fitcoins, :integer, default: 0
+
     # Twitter fields (optional)
     field :twitter_id, :string
     field :twitter_username, :string
@@ -43,7 +46,8 @@ defmodule Anoma.Accounts.User do
       :twitter_name,
       :twitter_public_metrics,
       :twitter_username,
-      :twitter_verified
+      :twitter_verified,
+      :fitcoins
     ])
     |> validate_twitter_fields()
     |> unique_constraint(:twitter_id)

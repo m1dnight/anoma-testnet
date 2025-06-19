@@ -14,6 +14,7 @@ defmodule AnomaWeb.Api.InviteController do
   tags ["invites"]
 
   operation :redeem_invite,
+    security: [%{"authorization" => []}],
     summary: "Redeem an invite code",
     parameters: [
       id: [in: :path, description: "invite code", type: :string, example: "let me in"]

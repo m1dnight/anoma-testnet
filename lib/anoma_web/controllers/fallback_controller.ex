@@ -32,9 +32,9 @@ defmodule AnomaWeb.FallbackController do
 
   def call(conn, {:error, message}) do
     conn
-    |> put_status(:unauthorized)
+    |> put_status(:internal_error)
     |> assign(:error, message)
     |> put_view(html: AnomaWeb.ErrorHTML, json: AnomaWeb.ErrorJSON)
-    |> render(:"401")
+    |> render(:"500")
   end
 end

@@ -44,7 +44,8 @@ defmodule Anoma.MixProject do
       {:httpoison, "~> 2.0"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:typed_ecto_schema, "~> 0.4.1", runtime: false},
-      {:open_api_spex, "~> 3.21"}
+      {:open_api_spex, "~> 3.21"},
+      {:ecto_watch, "~> 0.11.1"}
     ]
   end
 

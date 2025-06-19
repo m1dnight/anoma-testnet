@@ -103,13 +103,7 @@ defmodule AnomaWeb.Api.UserController do
   def update_eth_address(conn, %{"address" => eth_address}) do
     # update the user's ethereum address
     with user <- conn.assigns.current_user,
-         {:ok, user} <- Accounts.update_user_eth_address(user, eth_address) do
-      # broadcast the updated user to the channel
-      AnomaWeb.Endpoint.broadcast("user:#{user.id}", "profile_update", %{
-        type: "profile_update",
-        user: user
-      })
-
+         {:ok, _user} <- Accounts.update_user_eth_address(user, eth_address) do
       json(conn, %{success: true})
     else
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -123,7 +117,6 @@ defmodule AnomaWeb.Api.UserController do
           |> Enum.join(" ")
 
         {:error, error_message}
-        |> IO.inspect(label: "error")
     end
   end
 end

@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', async function () {
   const clearDataBtn = document.getElementById('clearDataBtn');
   clearDataBtn.addEventListener('click', cleanupData);
 
+  // add fitcoin handler
+  const addFitcoinBtn = document.getElementById('addFitcoinBtn');
+  addFitcoinBtn.addEventListener('click', addFitcoin);
+
   //----------------------------------------------------------------------------
   // Check for redirect from x.com
 
@@ -89,6 +93,34 @@ async function doLogin() {
 
   // redirect to the x.com auth page
   window.location.href = twitterUrl;
+}
+
+//----------------------------------------------------------------------------
+// Fitcoin
+
+async function addFitcoin() {
+  console.log('adding 1 fitcoin');
+
+
+  // send code and code_verified to the backend to let it fetch a token for our account
+  try {
+    const response = await fetch(`${CONFIG.backendUrl}/api/v1/fitcoin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${currentJwt}`,
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+      logMessage('/api/v1/fitcoin returned an error', 'error', channel = 'messages');
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    logMessage('/api/v1/fitcoin returned an error', 'error', channel = 'messages');
+    throw new Error(`HTTP error! status: ${error}`);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -193,6 +225,7 @@ function connectChannel(socket) {
   });
 
   channel.on('profile_update', function (payload) {
+    console.log("payload", payload);
     currentUser = payload.user;
     updateUserData();
     logMessage('profile_update: ' + JSON.stringify(payload), 'incoming', 'channelMessages');

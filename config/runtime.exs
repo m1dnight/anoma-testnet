@@ -1,5 +1,5 @@
 import Config
-
+require Logger
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration
@@ -20,10 +20,10 @@ import Config
 config :anoma, AnomaWeb.Endpoint, server: true
 # end
 
-twitter_client_id = System.get_env("TWITTER_CLIENT_ID") || raise("TWITTER_CLIENT_ID is not set")
+twitter_client_id = System.get_env("TWITTER_CLIENT_ID") || Logger.warning("TWITTER_CLIENT_ID is not set")
 
 twitter_client_secret =
-  System.get_env("TWITTER_CLIENT_SECRET") || raise("TWITTER_CLIENT_SECRET is not set")
+  System.get_env("TWITTER_CLIENT_SECRET") || Logger.warning("TWITTER_CLIENT_SECRET is not set")
 
 config :anoma,
   twitter_client_id: twitter_client_id,

@@ -9,12 +9,14 @@ defmodule AnomaWeb.Plugs.AuthPlug do
   import Plug.Conn
   alias Anoma.Accounts
 
+  require Logger
+
   def init(opts), do: opts
 
   def call(conn, _opts) do
     case get_token_from_header(conn) do
       {:ok, token} ->
-        IO.inspect(token)
+        Logger.debug("auth token: #{token}")
 
         case verify_token(token) do
           {:ok, payload} ->

@@ -5,6 +5,8 @@ defmodule Anoma.Application do
 
   use Application
 
+  alias Anoma.Accounts.User
+
   @impl true
   def start(_type, _args) do
     children = [
@@ -15,7 +17,14 @@ defmodule Anoma.Application do
       # Start a worker by calling: Anoma.Worker.start_link(arg)
       # {Anoma.Worker, arg},
       # Start to serve requests, typically the last entry
-      AnomaWeb.Endpoint
+      AnomaWeb.Endpoint,
+      {EctoWatch,
+       repo: Anoma.Repo,
+       pub_sub: Anoma.PubSub,
+       watchers: [
+         {User, :inserted},
+         {User, :updated}
+       ]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

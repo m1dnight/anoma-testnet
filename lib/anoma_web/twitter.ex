@@ -121,7 +121,6 @@ defmodule AnomaWeb.Twitter do
 
       case HTTPoison.get(@twitter_user_meta_data_url, headers) do
         {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
-          IO.inspect(response_body, label: "response body")
           result = Jason.decode(response_body, keys: :atoms)
 
           case result do
@@ -140,7 +139,6 @@ defmodule AnomaWeb.Twitter do
           Logger.error("failed to fetch user data: #{reason}")
           {:error, :failed_to_fetch_user_data}
       end
-      |> tap(&IO.inspect(&1, label: "fetch_user_meta_data"))
     else
       cache
     end
