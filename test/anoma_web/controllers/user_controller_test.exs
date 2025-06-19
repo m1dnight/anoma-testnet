@@ -3,6 +3,7 @@ defmodule AnomaWeb.UserControllerTest do
 
   import Anoma.AccountsFixtures
   alias Anoma.Accounts
+  alias AnomaWeb.Plugs.AuthPlug
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -12,7 +13,7 @@ defmodule AnomaWeb.UserControllerTest do
     user = user_fixture()
 
     # create a jwt for this user and add it as a header
-    {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+    jwt = AuthPlug.generate_jwt_token(user)
     conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
     # try and add an ethereum address to the user
@@ -33,7 +34,7 @@ defmodule AnomaWeb.UserControllerTest do
     user = user_fixture()
 
     # create a jwt for this user and add it as a header
-    {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+    jwt = AuthPlug.generate_jwt_token(user)
     conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
     # try and add an ethereum address to the user

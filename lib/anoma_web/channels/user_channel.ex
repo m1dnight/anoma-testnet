@@ -1,4 +1,8 @@
 defmodule AnomaWeb.UserChannel do
+  @moduledoc """
+  This module handles the websocket communication with the user.
+  This channel deals with unique users and is considered safe and authenticated.
+  """
   use AnomaWeb, :channel
 
   alias Anoma.Accounts

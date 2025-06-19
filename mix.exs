@@ -32,6 +32,8 @@ defmodule Anoma.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:phoenix, "~> 1.7.21"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
@@ -42,10 +44,10 @@ defmodule Anoma.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:httpoison, "~> 2.0"},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:typed_ecto_schema, "~> 0.4.1", runtime: false},
       {:open_api_spex, "~> 3.21"},
-      {:ecto_watch, "~> 0.11.1"}
+      {:ecto_watch, "~> 0.11.1"},
+      {:quantum, "~> 3.5.3"}
     ]
   end
 

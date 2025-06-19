@@ -3,6 +3,8 @@ defmodule Anoma.AccountsFixtures do
   This module defines test helpers for creating
   entities via the `Anoma.Accounts` context.
   """
+  alias Anoma.Accounts
+  alias Anoma.Accounts.DailyPoints
 
   @doc """
   Generate a user.
@@ -16,7 +18,7 @@ defmodule Anoma.AccountsFixtures do
         eth_address: Base.encode16(:crypto.strong_rand_bytes(20)),
         points: 42
       })
-      |> Anoma.Accounts.create_user()
+      |> Accounts.create_user()
 
     user
   end
@@ -30,8 +32,27 @@ defmodule Anoma.AccountsFixtures do
       |> Enum.into(%{
         code: "some code"
       })
-      |> Anoma.Accounts.create_invite()
+      |> Accounts.create_invite()
 
     invite
+  end
+
+  @doc """
+  Generate a daily_point.
+  """
+  def daily_point_fixture(attrs \\ %{}) do
+    user = attrs[:user] || user_fixture()
+
+    {:ok, daily_point} =
+      attrs
+      |> Enum.into(%{
+        location: :crypto.strong_rand_bytes(64) |> Base.encode16(),
+        day: Date.utc_today(),
+        claimed: false,
+        user_id: user.id
+      })
+      |> DailyPoints.create_daily_point()
+
+    daily_point
   end
 end

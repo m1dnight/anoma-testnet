@@ -1,7 +1,11 @@
 defmodule AnomaWeb.ApiSpec.Schemas do
+  @moduledoc """
+  Specifications of common return values from the api.
+  """
   alias OpenApiSpex.Schema
 
   defmodule User do
+    @moduledoc false
     require OpenApiSpex
 
     OpenApiSpex.schema(%{
@@ -55,6 +59,7 @@ defmodule AnomaWeb.ApiSpec.Schemas do
   end
 
   defmodule JsonError do
+    @moduledoc false
     require OpenApiSpex
 
     OpenApiSpex.schema(%{
@@ -71,6 +76,7 @@ defmodule AnomaWeb.ApiSpec.Schemas do
   end
 
   defmodule JsonSuccess do
+    @moduledoc false
     require OpenApiSpex
 
     OpenApiSpex.schema(%{
@@ -82,6 +88,43 @@ defmodule AnomaWeb.ApiSpec.Schemas do
         success: %Schema{type: :boolean, description: "success message", example: true}
       },
       example: %{success: true}
+    })
+  end
+
+  defmodule DailyPoint do
+    @moduledoc false
+    require OpenApiSpex
+
+    OpenApiSpex.schema(%{
+      # The title is optional. It defaults to the last section of the module name.
+      # So the derived title for MyApp.User is "User".
+      title: "daily point",
+      type: :object,
+      properties: %{
+        id: %Schema{
+          type: :string,
+          description: "unique identifier",
+          example: "331e0c6f-dd52-4be2-8039-2fd5acea283e"
+        },
+        day: %Schema{
+          type: :string,
+          description: "date string for the day of the reward",
+          example:
+            "F2DF174E0417CE8F063A2AA27DAB78D5BC950504C77A3E18FE4D0FF4BCEA04EC8066E1ABFF7E9443758EE0D7014BC388FA0D92E99FE6518035CF0770FCD494EF"
+        },
+        claimed: %Schema{
+          type: :boolean,
+          description: "boolean indicating the reward being claimed or not",
+          example: false
+        }
+      },
+      example: %{
+        id: "fc7b0093-d318-497a-a678-66d30c6a6261",
+        location:
+          "F2DF174E0417CE8F063A2AA27DAB78D5BC950504C77A3E18FE4D0FF4BCEA04EC8066E1ABFF7E9443758EE0D7014BC388FA0D92E99FE6518035CF0770FCD494EF",
+        day: "2025-06-19",
+        claimed: false
+      }
     })
   end
 end

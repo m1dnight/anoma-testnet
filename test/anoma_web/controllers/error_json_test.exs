@@ -6,6 +6,9 @@ defmodule AnomaWeb.ErrorJSONTest do
   end
 
   test "renders 500" do
-    assert AnomaWeb.ErrorJSON.render("500.json", %{}) == %{errors: %{detail: "Internal Server Error"}, success: false}
+    assert AnomaWeb.ErrorJSON.render("500.json", %{}) == %{
+             errors: %{detail: "Internal Server Error"},
+             success: false
+           }
   end
 end

@@ -21,7 +21,7 @@ defmodule AnomaWeb.UserSocket do
   #                                Sessions                                    #
   # ----------------------------------------------------------------------------#
 
-  defp generate_session_token() do
+  defp generate_session_token do
     :crypto.strong_rand_bytes(128)
     |> Base.url_encode64()
   end

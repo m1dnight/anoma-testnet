@@ -8,6 +8,7 @@ defmodule AnomaWeb.Plugs.AuthPlug do
 
   import Plug.Conn
   alias Anoma.Accounts
+  alias Anoma.Accounts.User
 
   require Logger
 
@@ -47,7 +48,7 @@ defmodule AnomaWeb.Plugs.AuthPlug do
   @doc """
   Generate a JWT for the front-end to authenticate with this backend.
   """
-  @spec generate_jwt_token(User.t()) :: {:ok, binary()} | {:error, String.t()}
+  @spec generate_jwt_token(User.t()) :: binary()
   def generate_jwt_token(user) do
     payload = %{
       "user_id" => user.id,
@@ -56,13 +57,10 @@ defmodule AnomaWeb.Plugs.AuthPlug do
       "iss" => "anoma_backend"
     }
 
-    case Phoenix.Token.sign(AnomaWeb.Endpoint, "user_auth", payload, max_age: 24 * 60 * 60) do
-      token when is_binary(token) -> {:ok, token}
-      error -> {:error, "Token generation failed: #{inspect(error)}"}
-    end
+    Phoenix.Token.sign(AnomaWeb.Endpoint, "user_auth", payload, max_age: 24 * 60 * 60)
   end
 
-  @spec verify_token(binary()) :: {:ok, map()} | {:error, String.t()}
+  @spec verify_token(binary()) :: {:ok, map()} | {:error, atom()}
   def verify_token(token) do
     case Phoenix.Token.verify(AnomaWeb.Endpoint, "user_auth", token, max_age: 24 * 60 * 60) do
       {:ok, payload} -> {:ok, payload}
@@ -72,7 +70,7 @@ defmodule AnomaWeb.Plugs.AuthPlug do
 
   defp load_user(payload) do
     case payload["user_id"] do
-      user_id when is_integer(user_id) ->
+      user_id when is_binary(user_id) ->
         try do
           user = Accounts.get_user!(user_id)
           {:ok, user}

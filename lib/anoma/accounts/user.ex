@@ -1,9 +1,14 @@
 defmodule Anoma.Accounts.User do
+  @moduledoc """
+  Schema that represents a single user in the application.
+  """
   use Ecto.Schema
   use TypedEctoSchema
 
   import Ecto.Changeset
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
   typed_schema "users" do
     @derive {Jason.Encoder, except: [:__meta__, :__struct__, :auth_token]}
     field :email, :string
@@ -26,6 +31,8 @@ defmodule Anoma.Accounts.User do
     field :auth_token, :string
 
     has_one :invite, Anoma.Accounts.Invite
+
+    has_many :daily_points, Anoma.Accounts.DailyPoint
 
     timestamps(type: :utc_datetime)
   end

@@ -20,7 +20,8 @@ require Logger
 config :anoma, AnomaWeb.Endpoint, server: true
 # end
 
-twitter_client_id = System.get_env("TWITTER_CLIENT_ID") || Logger.warning("TWITTER_CLIENT_ID is not set")
+twitter_client_id =
+  System.get_env("TWITTER_CLIENT_ID") || Logger.warning("TWITTER_CLIENT_ID is not set")
 
 twitter_client_secret =
   System.get_env("TWITTER_CLIENT_SECRET") || Logger.warning("TWITTER_CLIENT_SECRET is not set")

@@ -1,6 +1,13 @@
 defmodule AnomaWeb.ApiSpec do
-  alias OpenApiSpex.{Components, Info, OpenApi, Paths, Server, SecurityScheme}
-  alias AnomaWeb.{Endpoint, Router}
+  @moduledoc false
+  alias AnomaWeb.Endpoint
+  alias AnomaWeb.Router
+  alias OpenApiSpex.Components
+  alias OpenApiSpex.Info
+  alias OpenApiSpex.OpenApi
+  alias OpenApiSpex.Paths
+  alias OpenApiSpex.SecurityScheme
+  alias OpenApiSpex.Server
   @behaviour OpenApi
 
   @impl OpenApi

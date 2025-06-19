@@ -1,19 +1,12 @@
 defmodule AnomaWeb.Twitter do
+  @moduledoc """
+  This module contains functions to communicate with the Twitter API.
+  Used to turn `code` and `code_verified` into an accesstoken for the user.
+  """
   require Logger
-
-  alias Anoma.Accounts
-  alias Anoma.Accounts.User
 
   @twitter_api_url "https://api.twitter.com/2/oauth2/token"
   @twitter_user_meta_data_url "https://api.twitter.com/2/users/me?user.fields=id,name,username,profile_image_url,description,public_metrics,verified"
-
-  @doc """
-  Creates or updates a user in the database with the user's meta data from twitter.
-  """
-  @spec create_or_update_user(user_meta_data()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def create_or_update_user(user_data) do
-    Accounts.create_or_update_user_with_twitter_data(user_data)
-  end
 
   @doc """
   Given the code and code verifier from the user, exchange them for an access
@@ -72,22 +65,20 @@ defmodule AnomaWeb.Twitter do
   Given an access, token, fetch the user's meta data from the X api.
   """
   @type user_meta_data :: %{
-          data: %{
-            id: String.t(),
-            name: String.t(),
-            description: String.t(),
-            username: String.t(),
-            verified: boolean(),
-            public_metrics: %{
-              followers_count: number(),
-              following_count: number(),
-              tweet_count: number(),
-              listed_count: number(),
-              like_count: number(),
-              media_count: number()
-            },
-            profile_image_url: String.t()
-          }
+          id: String.t(),
+          name: String.t(),
+          description: String.t(),
+          username: String.t(),
+          verified: boolean(),
+          public_metrics: %{
+            followers_count: number(),
+            following_count: number(),
+            tweet_count: number(),
+            listed_count: number(),
+            like_count: number(),
+            media_count: number()
+          },
+          profile_image_url: String.t()
         }
   @spec fetch_user_meta_data(String.t()) ::
           {:ok, user_meta_data()}

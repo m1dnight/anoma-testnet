@@ -5,9 +5,10 @@ defmodule Anoma.Accounts.Fitcoin do
 
   import Ecto.Query, warn: false
 
-  alias Anoma.Repo
   alias Anoma.Accounts
   alias Anoma.Accounts.User
+  alias Anoma.Repo
+
   require Logger
 
   @doc """

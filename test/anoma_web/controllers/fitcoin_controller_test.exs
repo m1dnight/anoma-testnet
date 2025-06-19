@@ -3,6 +3,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
 
   import Anoma.AccountsFixtures
   alias Anoma.Accounts
+  alias AnomaWeb.Plugs.AuthPlug
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -13,7 +14,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
       user = user_fixture(%{fitcoins: 5})
 
       # create a jwt for this user and add it as a header
-      {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+      jwt = AuthPlug.generate_jwt_token(user)
       conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
       conn = post(conn, ~p"/api/v1/fitcoin")
@@ -28,7 +29,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
     test "adds fitcoin to user with nil fitcoins", %{conn: conn} do
       user = user_fixture(%{fitcoins: nil})
 
-      {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+      jwt = AuthPlug.generate_jwt_token(user)
       conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
       conn = post(conn, ~p"/api/v1/fitcoin")
@@ -42,7 +43,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
     test "adds fitcoin to user with zero fitcoins", %{conn: conn} do
       user = user_fixture(%{fitcoins: 0})
 
-      {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+      jwt = AuthPlug.generate_jwt_token(user)
       conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
       conn = post(conn, ~p"/api/v1/fitcoin")
@@ -72,7 +73,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
     test "returns user's current fitcoin balance", %{conn: conn} do
       user = user_fixture(%{fitcoins: 10})
 
-      {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+      jwt = AuthPlug.generate_jwt_token(user)
       conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
       conn = get(conn, ~p"/api/v1/fitcoin/balance")
@@ -83,7 +84,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
     test "returns zero balance for user with nil fitcoins", %{conn: conn} do
       user = user_fixture(%{fitcoins: nil})
 
-      {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+      jwt = AuthPlug.generate_jwt_token(user)
       conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
       conn = get(conn, ~p"/api/v1/fitcoin/balance")
@@ -94,7 +95,7 @@ defmodule AnomaWeb.Api.FitcoinControllerTest do
     test "returns zero balance for user with zero fitcoins", %{conn: conn} do
       user = user_fixture(%{fitcoins: 0})
 
-      {:ok, jwt} = AnomaWeb.Plugs.AuthPlug.generate_jwt_token(user)
+      jwt = AuthPlug.generate_jwt_token(user)
       conn = put_req_header(conn, "authorization", "Bearer #{jwt}")
 
       conn = get(conn, ~p"/api/v1/fitcoin/balance")

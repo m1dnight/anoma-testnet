@@ -17,7 +17,7 @@ defmodule Anoma.AccountsTest do
 
     test "get_user!/1 returns the user with given id" do
       user = user_fixture()
-      assert Accounts.get_user!(user.id) == user |> Repo.preload(:invite)
+      assert Accounts.get_user!(user.id) == user |> Repo.preload([:invite, :daily_points])
     end
 
     test "create_user/1 with valid data creates a user" do

@@ -40,6 +40,8 @@ defmodule AnomaWeb.Router do
     # /api/v1/user
     scope "/user" do
       post "/ethereum-address", UserController, :update_eth_address
+      get "/daily-points", UserController, :daily_points
+      post "/claim-daily-point", UserController, :claim_point
     end
 
     # /api/v1/fitcoin
@@ -47,6 +49,7 @@ defmodule AnomaWeb.Router do
       post "/", FitcoinController, :add
       get "/balance", FitcoinController, :balance
     end
+
     # /api/v1/invite
     scope "/invite" do
       put "/redeem/:invite_code", InviteController, :redeem_invite

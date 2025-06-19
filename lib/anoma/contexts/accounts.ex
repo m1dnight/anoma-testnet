@@ -5,11 +5,11 @@ defmodule Anoma.Accounts do
 
   import Ecto.Query, warn: false
 
+  alias Anoma.Accounts.Invite
+  alias Anoma.Accounts.User
   alias Anoma.Repo
   alias AnomaWeb.Twitter
-  alias Anoma.Accounts.User
 
-  alias Anoma.Accounts.Invite
   require Logger
 
   @doc """
@@ -39,7 +39,7 @@ defmodule Anoma.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload(:invite)
+  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload([:invite, :daily_points])
 
   @doc """
   Gets a single user.
@@ -56,9 +56,9 @@ defmodule Anoma.Accounts do
 
   """
   def get_user(id) do
-    case Repo.get(User, id) |> Repo.preload(:invite) do
+    case Repo.get(User, id) do
       nil -> {:error, :not_found}
-      user -> {:ok, Repo.preload(user, :invite)}
+      user -> {:ok, Repo.preload(user, [:invite, :daily_points])}
     end
   end
 
@@ -75,7 +75,7 @@ defmodule Anoma.Accounts do
 
   """
   def get_user_by_twitter_id(twitter_id) do
-    Repo.get_by(User, twitter_id: twitter_id) |> Repo.preload(:invite)
+    Repo.get_by(User, twitter_id: twitter_id) |> Repo.preload([:invite, :daily_points])
   end
 
   @doc """
@@ -109,21 +109,21 @@ defmodule Anoma.Accounts do
       {:ok, %User{}}
 
   """
-  @spec create_or_update_user_with_twitter_data(Twitter.user_meta_data()) ::
+  @spec create_or_update_user_with_twitter_data(Twitter.user_meta_data(), String.t()) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def create_or_update_user_with_twitter_data(twitter_data) do
+  def create_or_update_user_with_twitter_data(twitter_data, access_token) do
     case get_user_by_twitter_id(twitter_data.id) do
       nil ->
-        create_user_with_twitter_data(twitter_data)
+        create_user_with_twitter_data(twitter_data, access_token)
 
       existing_user ->
-        update_user_twitter_data(existing_user, twitter_data)
+        update_user_twitter_data(existing_user, twitter_data, access_token)
     end
   end
 
-  @spec create_user_with_twitter_data(Twitter.user_meta_data()) ::
+  @spec create_user_with_twitter_data(Twitter.user_meta_data(), String.t()) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def create_user_with_twitter_data(twitter_data) do
+  def create_user_with_twitter_data(twitter_data, access_token) do
     attrs = %{
       # twitter data
       twitter_id: twitter_data.id,
@@ -135,6 +135,7 @@ defmodule Anoma.Accounts do
       twitter_public_metrics: twitter_data.public_metrics,
       # other data
       auth_provider: "twitter",
+      auth_token: access_token,
       points: 0,
       confirmed_at: DateTime.utc_now()
     }
@@ -144,16 +145,16 @@ defmodule Anoma.Accounts do
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, :invite)}
+        {:ok, Repo.preload(user, [:invite, :daily_points])}
 
       err ->
         err
     end
   end
 
-  @spec update_user_twitter_data(User.t(), Twitter.user_meta_data()) ::
+  @spec update_user_twitter_data(User.t(), Twitter.user_meta_data(), String.t()) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def update_user_twitter_data(user, twitter_data) do
+  def update_user_twitter_data(user, twitter_data, access_token) do
     attrs = %{
       # twitter data
       twitter_id: twitter_data.id,
@@ -165,7 +166,7 @@ defmodule Anoma.Accounts do
       twitter_public_metrics: twitter_data.public_metrics,
       # other data
       auth_provider: "twitter",
-      auth_token: twitter_data.auth_token
+      auth_token: access_token
     }
 
     user
@@ -173,7 +174,7 @@ defmodule Anoma.Accounts do
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        {:ok, Repo.preload(user, :invite)}
+        {:ok, Repo.preload(user, [:invite, :daily_points])}
 
       err ->
         err

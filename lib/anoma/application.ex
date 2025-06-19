@@ -24,7 +24,8 @@ defmodule Anoma.Application do
        watchers: [
          {User, :inserted},
          {User, :updated}
-       ]}
+       ]},
+      Anoma.Scheduler
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
