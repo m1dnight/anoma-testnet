@@ -6,6 +6,8 @@ defmodule AnomaWeb.UserChannel do
   use AnomaWeb, :channel
 
   alias Anoma.Accounts
+  alias Anoma.Accounts.DailyPoint
+  alias Anoma.Accounts.DailyPoints
   alias Anoma.Accounts.User
   alias AnomaWeb.Plugs.AuthPlug
 
@@ -23,6 +25,8 @@ defmodule AnomaWeb.UserChannel do
       if "#{user_id}" == channel_user_id do
         # subscribe to updates from the database
         EctoWatch.subscribe({User, :updated}, user_id)
+        EctoWatch.subscribe({DailyPoint, :inserted})
+        socket = assign(socket, :current_user_id, user.id)
         {:ok, user, socket}
       else
         {:error, %{reason: "unauthorized"}}
@@ -43,6 +47,18 @@ defmodule AnomaWeb.UserChannel do
   def handle_info({{User, :updated}, %{id: user_id}}, socket) do
     user = Accounts.get_user!(user_id)
     push(socket, "profile_update", %{user: user})
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({{DailyPoint, :inserted}, %{id: id}}, socket) do
+    {:ok, daily_point} = DailyPoints.get_daily_point(id)
+
+    if socket.assigns.current_user_id == daily_point.user.id do
+      user = Accounts.get_user!(socket.assigns.current_user_id)
+      push(socket, "profile_update", %{user: user})
+    end
+
     {:noreply, socket}
   end
 end

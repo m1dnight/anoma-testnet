@@ -5,6 +5,7 @@ defmodule Anoma.Application do
 
   use Application
 
+  alias Anoma.Accounts.DailyPoint
   alias Anoma.Accounts.User
 
   @impl true
@@ -22,7 +23,7 @@ defmodule Anoma.Application do
        repo: Anoma.Repo,
        pub_sub: Anoma.PubSub,
        watchers: [
-         {User, :inserted},
+         {DailyPoint, :inserted},
          {User, :updated}
        ]},
       Anoma.Scheduler

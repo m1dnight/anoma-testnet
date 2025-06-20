@@ -84,54 +84,50 @@ defmodule AnomaWeb.Twitter do
           {:ok, user_meta_data()}
           | {:error, :failed_to_fetch_user_data}
   def fetch_user_meta_data(access_token) do
-    cache =
-      {:ok,
-       %{
-         id: "1933171045675986944",
-         name: "thisisnotabotaccount",
-         description: "",
-         username: "thisisnota41858",
-         profile_image_url:
-           "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
-         public_metrics: %{
-           followers_count: 0,
-           following_count: 1,
-           like_count: 0,
-           listed_count: 0,
-           media_count: 0,
-           tweet_count: 0
-         },
-         verified: false
-       }}
+    # cache =
+    #   {:ok,
+    #    %{
+    #      id: "1933171045675986944",
+    #      name: "thisisnotabotaccount",
+    #      description: "",
+    #      username: "thisisnota41858",
+    #      profile_image_url:
+    #        "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    #      public_metrics: %{
+    #        followers_count: 0,
+    #        following_count: 1,
+    #        like_count: 0,
+    #        listed_count: 0,
+    #        media_count: 0,
+    #        tweet_count: 0
+    #      },
+    #      verified: false
+    #    }}
 
-    if true do
-      headers = [
-        {"Authorization", "Bearer #{access_token}"},
-        {"Content-Type", "application/json"}
-      ]
+    headers = [
+      {"Authorization", "Bearer #{access_token}"},
+      {"Content-Type", "application/json"}
+    ]
 
-      case HTTPoison.get(@twitter_user_meta_data_url, headers) do
-        {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
-          result = Jason.decode(response_body, keys: :atoms)
+    case HTTPoison.get(@twitter_user_meta_data_url, headers) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
+        result = Jason.decode(response_body, keys: :atoms)
 
-          case result do
-            {:ok, %{data: user_data}} ->
-              {:ok, user_data}
+        case result do
+          {:ok, %{data: user_data}} ->
+            {:ok, user_data}
 
-            {:error, _} ->
-              {:error, :failed_to_fetch_user_data}
-          end
+          {:error, _} ->
+            {:error, :failed_to_fetch_user_data}
+        end
 
-        {:ok, %HTTPoison.Response{status_code: _status_code, body: response_body}} ->
-          Logger.error("failed to fetch user data: #{response_body}")
-          {:error, :failed_to_fetch_user_data}
+      {:ok, %HTTPoison.Response{status_code: _status_code, body: response_body}} ->
+        Logger.error("failed to fetch user data: #{response_body}")
+        {:error, :failed_to_fetch_user_data}
 
-        {:error, %HTTPoison.Error{reason: reason}} ->
-          Logger.error("failed to fetch user data: #{reason}")
-          {:error, :failed_to_fetch_user_data}
-      end
-    else
-      cache
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.error("failed to fetch user data: #{reason}")
+        {:error, :failed_to_fetch_user_data}
     end
   end
 end

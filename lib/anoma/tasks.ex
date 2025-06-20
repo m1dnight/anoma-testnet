@@ -17,13 +17,13 @@ defmodule Anoma.Tasks do
       if Enum.count(daily_points) >= 3 do
         []
       else
-        attrs = %{
-          user_id: user.id,
-          location: Base.encode16(:crypto.strong_rand_bytes(64)),
-          day: Date.utc_today()
-        }
-
         for _ <- 1..@daily_rewards do
+          attrs = %{
+            user_id: user.id,
+            location: Base.encode16(:crypto.strong_rand_bytes(64)),
+            day: Date.utc_today()
+          }
+
           {:ok, point} = DailyPoints.create_daily_point(attrs)
           point
         end
