@@ -9,7 +9,7 @@ services:
       - TWITTER_CLIENT_ID=${TWITTER_CLIENT_ID}
       - TWITTER_CLIENT_SECRET=${TWITTER_CLIENT_SECRET}
       - PORT=${PORT:-4000}
-      - PHX_HOST=0.0.0.0
+      - PHX_HOST=${PHX_HOST:-0.0.0.0}
     depends_on:
       - db
 

@@ -104,7 +104,7 @@ defmodule AnomaWeb.Twitter do
          verified: false
        }}
 
-    if false do
+    if true do
       headers = [
         {"Authorization", "Bearer #{access_token}"},
         {"Content-Type", "application/json"}
