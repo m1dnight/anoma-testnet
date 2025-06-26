@@ -3,6 +3,7 @@ defmodule Anoma.Tasks do
   Defines a few functions that are being run as a task by the Quantum scheduler.
   """
   alias Anoma.Accounts.DailyPoints
+  alias Anoma.Invites
 
   @doc """
   Create new rewards for all users
@@ -27,6 +28,23 @@ defmodule Anoma.Tasks do
           {:ok, point} = DailyPoints.create_daily_point(attrs)
           point
         end
+      end
+    end)
+  end
+
+  @invite_count 10
+  @doc """
+  Generate invites for users.
+  """
+  def generate_invites do
+    Anoma.Accounts.list_users()
+    |> Enum.each(fn user ->
+      invites = Invites.invites_for(user)
+
+      for _ <- 1..(@invite_count - Enum.count(invites)) do
+        code = Base.encode16(:crypto.strong_rand_bytes(8))
+        {:ok, invite} = Invites.create_invite(%{code: code})
+        Invites.assign_invite(invite, user)
       end
     end)
   end

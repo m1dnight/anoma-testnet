@@ -161,4 +161,50 @@ defmodule Anoma.Invites do
   def change_invite(%Invite{} = invite, attrs \\ %{}) do
     Invite.changeset(invite, attrs)
   end
+
+  @doc """
+  Returns the list of invites associated to the given user.
+
+  ## Examples
+
+      iex> invites_for(user)
+      [%Invite{}]
+
+  """
+  def invites_for(%User{} = user) do
+    user
+    |> Repo.preload(:invites)
+    |> Map.get(:invites)
+  end
+
+  @doc """
+  Assigns an existing invite to an existing user.
+  """
+  def assign_invite(invite, user) do
+    Repo.transaction(fn ->
+      # fetch the invite to have the latest version
+      invite = get_invite!(invite.id) |> Repo.preload(:owner)
+
+      # ensure invite is not claimed by another user
+      user = Accounts.get_user!(user.id)
+
+      cond do
+        invite.owner_id != nil ->
+          Repo.rollback(:invite_already_assigned)
+
+        true ->
+          invite
+          |> Ecto.Changeset.change()
+          |> Ecto.Changeset.put_assoc(:owner, user)
+          |> Repo.update()
+      end
+    end)
+    |> case do
+      {:ok, res} ->
+        res
+
+      err ->
+        err
+    end
+  end
 end
