@@ -31,7 +31,10 @@ defmodule Anoma.Accounts.User do
     field :auth_provider, :string
     field :auth_token, :string
 
-    has_one :invite, Anoma.Accounts.Invite
+    # has_one :invite, Anoma.Accounts.Invite
+
+    # invites available to this user
+    has_many :invites, Anoma.Accounts.Invite, foreign_key: :owner_id
 
     has_many :daily_points, Anoma.Accounts.DailyPoint
 

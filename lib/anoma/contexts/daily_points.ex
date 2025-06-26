@@ -38,7 +38,10 @@ defmodule Anoma.Accounts.DailyPoints do
       ** (Ecto.NoResultsError)
 
   """
-  def get_daily_point!(id), do: Repo.get!(DailyPoint, id) |> Repo.preload(:user)
+  def get_daily_point!(id) do
+    Repo.get!(DailyPoint, id)
+    |> Repo.preload(:user)
+  end
 
   @doc """
   Gets a single daily_point.
@@ -79,13 +82,6 @@ defmodule Anoma.Accounts.DailyPoints do
     %DailyPoint{}
     |> DailyPoint.changeset(attrs)
     |> Repo.insert()
-    |> case do
-      {:ok, point} ->
-        {:ok, Repo.preload(point, :user)}
-
-      err ->
-        err
-    end
   end
 
   @doc """
@@ -175,7 +171,6 @@ defmodule Anoma.Accounts.DailyPoints do
     |> where([dp], dp.user_id == ^user.id)
     |> where([dp], dp.day == ^date)
     |> order_by([dp], desc: dp.day)
-    |> preload([dp], [:user])
     |> Repo.all()
   end
 

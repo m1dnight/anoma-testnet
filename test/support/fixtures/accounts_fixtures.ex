@@ -5,6 +5,7 @@ defmodule Anoma.AccountsFixtures do
   """
   alias Anoma.Accounts
   alias Anoma.Accounts.DailyPoints
+  alias Anoma.Invites
 
   @doc """
   Generate a user.
@@ -32,7 +33,7 @@ defmodule Anoma.AccountsFixtures do
       |> Enum.into(%{
         code: "some code"
       })
-      |> Accounts.create_invite()
+      |> Invites.create_invite()
 
     invite
   end
@@ -53,6 +54,6 @@ defmodule Anoma.AccountsFixtures do
       })
       |> DailyPoints.create_daily_point()
 
-    daily_point
+    DailyPoints.get_daily_point!(daily_point.id)
   end
 end

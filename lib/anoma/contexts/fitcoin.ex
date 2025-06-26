@@ -26,7 +26,7 @@ defmodule Anoma.Accounts.Fitcoin do
   """
   @spec balance(User.t()) :: {:ok, non_neg_integer()}
   def balance(%User{} = user) do
-    with {:ok, user} <- Accounts.get_user(user.id) do
+    with %User{} = user <- Accounts.get_user(user.id) do
       {:ok, user.fitcoins || 0}
     end
   end

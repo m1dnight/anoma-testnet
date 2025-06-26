@@ -5,7 +5,6 @@ defmodule Anoma.Accounts do
 
   import Ecto.Query, warn: false
 
-  alias Anoma.Accounts.Invite
   alias Anoma.Accounts.User
   alias Anoma.Repo
   alias AnomaWeb.Twitter
@@ -22,7 +21,7 @@ defmodule Anoma.Accounts do
 
   """
   def list_users do
-    Repo.all(User) |> Repo.preload(:invite)
+    Repo.all(User)
   end
 
   @doc """
@@ -39,7 +38,7 @@ defmodule Anoma.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload([:invite, :daily_points])
+  def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
   Gets a single user.
@@ -49,17 +48,14 @@ defmodule Anoma.Accounts do
   ## Examples
 
       iex> get_user(123)
-      {:ok, %User{}}
+      User{}
 
       iex> get_user(456)
       {:error, :not_found}
 
   """
   def get_user(id) do
-    case Repo.get(User, id) do
-      nil -> {:error, :not_found}
-      user -> {:ok, Repo.preload(user, [:invite, :daily_points])}
-    end
+    Repo.get(User, id)
   end
 
   @doc """
@@ -75,7 +71,7 @@ defmodule Anoma.Accounts do
 
   """
   def get_user_by_twitter_id(twitter_id) do
-    Repo.get_by(User, twitter_id: twitter_id) |> Repo.preload([:invite, :daily_points])
+    Repo.get_by(User, twitter_id: twitter_id)
   end
 
   @doc """
@@ -143,13 +139,6 @@ defmodule Anoma.Accounts do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
-    |> case do
-      {:ok, user} ->
-        {:ok, Repo.preload(user, [:invite, :daily_points])}
-
-      err ->
-        err
-    end
   end
 
   @spec update_user_twitter_data(User.t(), Twitter.user_meta_data(), String.t()) ::
@@ -172,13 +161,6 @@ defmodule Anoma.Accounts do
     user
     |> User.changeset(attrs)
     |> Repo.update()
-    |> case do
-      {:ok, user} ->
-        {:ok, Repo.preload(user, [:invite, :daily_points])}
-
-      err ->
-        err
-    end
   end
 
   @doc """
@@ -197,13 +179,6 @@ defmodule Anoma.Accounts do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
-    |> case do
-      {:ok, user} ->
-        {:ok, Repo.preload(user, :invite)}
-
-      err ->
-        err
-    end
   end
 
   @doc """
@@ -290,162 +265,5 @@ defmodule Anoma.Accounts do
   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
-  end
-
-  @doc """
-  Returns the list of invites.
-
-  ## Examples
-
-      iex> list_invites()
-      [%Invite{}, ...]
-
-  """
-  def list_invites do
-    Repo.all(Invite) |> Repo.preload(:user)
-  end
-
-  @doc """
-  Retrieves an invite based on its code.
-
-  ## Examples
-
-      iex> get_invite_by_code!("INV-123456789")
-      %Invite{}
-
-      iex> get_invite_by_code!("nonexistent")
-      nil
-  """
-  def get_invite_by_code!(code) do
-    Repo.get_by!(Invite, code: code) |> Repo.preload(:user)
-  end
-
-  @doc """
-  Gets a single invite.
-
-  Raises `Ecto.NoResultsError` if the Invite does not exist.
-
-  ## Examples
-
-      iex> get_invite!(123)
-      %Invite{}
-
-      iex> get_invite!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_invite!(id), do: Repo.get!(Invite, id) |> Repo.preload(:user)
-
-  @doc """
-  Creates a invite.
-
-  ## Examples
-
-      iex> create_invite(%{field: value})
-      {:ok, %Invite{}}
-
-      iex> create_invite(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_invite(attrs \\ %{}) do
-    %Invite{}
-    |> Invite.changeset(attrs)
-    |> Repo.insert()
-    |> case do
-      {:ok, invite} ->
-        {:ok, Repo.preload(invite, :user)}
-
-      err ->
-        err
-    end
-  end
-
-  @doc """
-  Updates a invite.
-
-  ## Examples
-
-      iex> update_invite(invite, %{field: new_value})
-      {:ok, %Invite{}}
-
-      iex> update_invite(invite, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_invite(%Invite{} = invite, attrs) do
-    invite
-    |> Invite.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Claims an invite for a user.
-
-  ## Examples
-
-      iex> claim_invite(invite, user)
-      {:ok, %Invite{}}
-
-      iex> claim_invite(invite, user)
-      {:error, %Ecto.Changeset{}}
-  """
-  def claim_invite(%Invite{} = invite, %User{} = user) do
-    Repo.transaction(fn ->
-      # ensure invite is not claimed
-      invite = get_invite!(invite.id)
-      user = get_user!(user.id)
-
-      cond do
-        invite.user_id != nil ->
-          Repo.rollback(:invite_already_claimed)
-
-        user.invite != nil ->
-          Repo.rollback(:user_already_claimed_invite)
-
-        true ->
-          invite
-          |> Repo.preload(:user)
-          |> Invite.changeset(%{})
-          |> Ecto.Changeset.put_assoc(:user, user)
-          |> Repo.update()
-          |> case do
-            {:ok, invite} ->
-              Repo.preload(invite, :user)
-
-            {:error, changeset} ->
-              Repo.rollback(changeset)
-          end
-      end
-    end)
-  end
-
-  @doc """
-  Deletes a invite.
-
-  ## Examples
-
-      iex> delete_invite(invite)
-      {:ok, %Invite{}}
-
-      iex> delete_invite(invite)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_invite(%Invite{} = invite) do
-    Repo.delete(invite)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking invite changes.
-
-  ## Examples
-
-      iex> change_invite(invite)
-      %Ecto.Changeset{data: %Invite{}}
-
-  """
-  def change_invite(%Invite{} = invite, attrs \\ %{}) do
-    Invite.changeset(invite, attrs)
   end
 end
