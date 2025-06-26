@@ -21,6 +21,7 @@ defmodule AnomaWeb.UserChannel do
          user_id <- Map.get(token, "user_id"),
          # query the user to ensure it really exists in the backend
          user when not is_nil(user) <- Accounts.get_user(user_id) do
+      user = Anoma.Repo.preload(user, [:invite, :invites, :daily_points])
       # the user in the token should be the same as the user id in the channel
       if "#{user_id}" == channel_user_id do
         # subscribe to updates from the database
@@ -46,6 +47,7 @@ defmodule AnomaWeb.UserChannel do
   @impl true
   def handle_info({{User, :updated}, %{id: user_id}}, socket) do
     user = Accounts.get_user!(user_id)
+    user = Anoma.Repo.preload(user, [:invite, :invites, :daily_points])
     push(socket, "profile_update", %{user: user})
     {:noreply, socket}
   end
@@ -56,6 +58,7 @@ defmodule AnomaWeb.UserChannel do
 
     if socket.assigns.current_user_id == daily_point.user.id do
       user = Accounts.get_user!(socket.assigns.current_user_id)
+      user = Anoma.Repo.preload(user, [:invite, :invites, :daily_points])
       push(socket, "profile_update", %{user: user})
     end
 

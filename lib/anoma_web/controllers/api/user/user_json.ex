@@ -12,4 +12,11 @@ defmodule AnomaWeb.Api.UserJSON do
   def update_eth(_) do
     %{success: true}
   end
+
+  @doc """
+  Renders the success update ethereum address action.
+  """
+  def auth(%{user: user, jwt: token}) do
+    %{success: true, user: user, jwt: token}
+  end
 end

@@ -278,4 +278,38 @@ defmodule Anoma.Accounts do
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end
+
+  @doc """
+  Creates or updates a user based on their Ethereum address.
+
+  ## Examples
+
+      iex> create_or_update_user_with_eth_address("0x1234...")
+      {:ok, %User{}}
+
+  """
+  @spec create_or_update_user_with_eth_address(String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def create_or_update_user_with_eth_address(eth_address) do
+    case Repo.get_by(User, eth_address: eth_address) do
+      nil ->
+        create_user_with_eth_address(eth_address)
+      
+      existing_user ->
+        {:ok, existing_user}
+    end
+  end
+
+  @spec create_user_with_eth_address(String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  defp create_user_with_eth_address(eth_address) do
+    attrs = %{
+      eth_address: eth_address,
+      auth_provider: "metamask",
+      points: 0,
+      confirmed_at: DateTime.utc_now()
+    }
+
+    %User{}
+    |> User.changeset(attrs)
+    |> Repo.insert()
+  end
 end

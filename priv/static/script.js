@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Install callbacks on buttons
 
 
-  // button to login to x.com
+  // button to login with metamask
   const loginBtn = document.getElementById('loginBtn');
-  loginBtn.addEventListener('click', doLogin);
+  loginBtn.addEventListener('click', doMetaMaskLogin);
 
   // button to sign in to metamask
   const metamaskBtn = document.getElementById('metamaskBtn');
@@ -49,21 +49,16 @@ document.addEventListener('DOMContentLoaded', async function () {
   addFitcoinBtn.addEventListener('click', addFitcoin);
 
   //----------------------------------------------------------------------------
-  // Check for redirect from x.com
+  // Check for existing session
 
-  // the page is loaded after being redirected from x.com
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code');
-
-  if (code) {
-    console.log('redirected here from x.com');
-    await handleRedirect(code);
+  // Check if we have existing authentication data
+  currentJwt = localStorage.getItem('jwt');
+  currentUserId = localStorage.getItem('user_id');
+  
+  if (currentJwt && currentUserId) {
+    console.log('Found existing session');
   } else {
-    console.log('not redirected from x.com');
-    // the page is loaded, but it was not a redirect from x.com.
-    // maybe there are still tokens in local storage we can use.
-    currentJwt = localStorage.getItem('jwt');
-    currentUserId = localStorage.getItem('user_id');
+    console.log('No existing session found');
   }
 
   //----------------------------------------------------------------------------
@@ -73,29 +68,78 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 //----------------------------------------------------------------------------
-// Handle the initial page load
+// Handle MetaMask authentication
 
-async function doLogin() {
-  console.log('logging in on x.com');
+async function doMetaMaskLogin() {
+  console.log('Starting MetaMask authentication');
 
-  const codeVerifier = generateCodeVerifier();
-  localStorage.setItem('twitter_code_verifier', codeVerifier);
+  if (!window.ethereum) {
+    logMessage('MetaMask is not installed!', 'error', 'messages');
+    return;
+  }
 
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
+  try {
+    // Request account access
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const address = accounts[0];
+    
+    // Create a message to sign
+    const message = `Welcome to Anoma Testnet!\n\nSign this message to authenticate with your wallet.\n\nAddress: ${address}\nNonce: ${Date.now()}`;
+    
+    // Sign the message
+    const signature = await window.ethereum.request({
+      method: 'personal_sign',
+      params: [message, address]
+    });
+    
+    console.log('Message signed successfully');
+    
+    // Send signature to backend for verification
+    await authenticateWithSignature(address, message, signature);
+    
+  } catch (error) {
+    console.error('MetaMask authentication failed:', error);
+    logMessage('MetaMask authentication failed: ' + error.message, 'error', 'messages');
+  }
+}
 
-  // create the url to authenticate with X.com
-  const twitterUrl =
-    `https://twitter.com/i/oauth2/authorize?` +
-    `response_type=code&` +
-    `client_id=${CONFIG.twitterClientId}&` +
-    `redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}&` +
-    `scope=tweet.read%20users.read%20follows.read&` +
-    `state=state&` +
-    `code_challenge=${codeChallenge}&` +
-    `code_challenge_method=S256`;
+async function authenticateWithSignature(address, message, signature) {
+  try {
+    const response = await fetch(`${CONFIG.backendUrl}/api/v1/user/metamask-auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        address: address,
+        message: message,
+        signature: signature
+      })
+    });
 
-  // redirect to the x.com auth page
-  window.location.href = twitterUrl;
+    if (!response.ok) {
+      logMessage('/api/v1/user/metamask-auth returned an error', 'error', 'messages');
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.user) {
+      currentUser = data.user;
+      currentUserId = data.user.id;
+      currentJwt = data.jwt;
+      
+      // Store in localStorage
+      localStorage.setItem('user_id', currentUserId);
+      localStorage.setItem('jwt', currentJwt);
+      
+      updateUserData();
+      logMessage('Authentication successful', 'success', 'messages');
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  } catch (error) {
+    console.error('Authentication error:', error);
+    logMessage('Authentication error: ' + error.message, 'error', 'messages');
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -126,52 +170,6 @@ async function addFitcoin() {
   }
 }
 
-//----------------------------------------------------------------------------
-// Handle redirect from x.com
-
-async function handleRedirect(code) {
-  console.log('handling redirect from x.com');
-
-  // read code verified from local storage
-  const codeVerifier = localStorage.getItem('twitter_code_verifier');
-
-  // send code and code_verified to the backend to let it fetch a token for our account
-  try {
-    const response = await fetch(`${CONFIG.backendUrl}/api/v1/user/auth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code, code_verifier: codeVerifier }),
-    });
-
-    if (!response.ok) {
-      logMessage('/api/v1/user/auth returned an error', 'error', channel = 'messages');
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // if the request succeeded, we get back {user: .., success: true}
-    const data = await response.json();
-
-    if (data.success && data.user) {
-      currentUser = data.user;
-      localStorage.setItem('user_id', currentUser.id);
-
-      currentUserId = currentUser.id;
-      localStorage.setItem('user_id', currentUserId);
-
-      updateUserData();
-
-      // persist the backend jwt in local storage
-      currentJwt = data.jwt;
-      localStorage.setItem('jwt', currentJwt);
-
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-      throw new Error('Invalid response from server');
-    }
-  } catch (error) {
-  } finally {
-  }
-}
 
 //----------------------------------------------------------------------------
 // Websocket connection
@@ -273,9 +271,6 @@ async function connectMetamask() {
 function setDebugData() {
   const debug = document.getElementById('debugdata');
   debug.innerHTML = `
-    authToken: ${localStorage.getItem('authToken')}
-    codeVerifier: ${localStorage.getItem('twitter_code_verifier')}
-    code: ${localStorage.getItem('twitter_code')}
     jwt: ${localStorage.getItem('jwt')}
     user_id: ${localStorage.getItem('user_id')}
     `;
@@ -286,8 +281,7 @@ Cleanup the data from local storage. This is done when the user tried to login
 with valid jwt but the user did not exist in the backend.
 */
 function cleanupData() {
-  localStorage.removeItem('twitter_code_verifier');
-  localStorage.removeItem('twitter_code');
   localStorage.removeItem('jwt');
   localStorage.removeItem('user_id');
+  setDebugData();
 }

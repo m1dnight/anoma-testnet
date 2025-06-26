@@ -37,6 +37,8 @@ defmodule AnomaWeb.Router do
     pipe_through :api
     # trade a code and code_verifier for a token and user
     post "/user/auth", UserController, :auth
+    # authenticate with MetaMask signature
+    post "/user/metamask-auth", UserController, :metamask_auth
   end
 
   # authenticated api routes
