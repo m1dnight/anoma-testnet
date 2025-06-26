@@ -110,7 +110,7 @@ defmodule Anoma.Invites do
       user = Accounts.get_user!(user.id)
 
       cond do
-        invite.owner_id != nil ->
+        invite.invitee_id != nil ->
           Repo.rollback(:invite_already_claimed)
 
         # user.invite != nil ->
@@ -118,9 +118,9 @@ defmodule Anoma.Invites do
 
         true ->
           invite
-          |> Repo.preload(:owner)
+          |> Repo.preload(:invitee)
           |> Invite.changeset(%{})
-          |> Ecto.Changeset.put_assoc(:owner, user)
+          |> Ecto.Changeset.put_assoc(:invitee, user)
           |> Repo.update()
       end
     end)

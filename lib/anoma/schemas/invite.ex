@@ -10,9 +10,11 @@ defmodule Anoma.Accounts.Invite do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   typed_schema "invites" do
-    @derive {Jason.Encoder, except: [:__meta__, :__struct__, :owner]}
+    @derive {Jason.Encoder, except: [:__meta__, :__struct__, :owner, :invitee]}
     field :code, :string
     belongs_to :owner, Anoma.Accounts.User
+
+    belongs_to :invitee, Anoma.Accounts.User
 
     timestamps(type: :utc_datetime)
   end

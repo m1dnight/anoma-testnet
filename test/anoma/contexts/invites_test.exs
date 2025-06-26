@@ -66,33 +66,29 @@ defmodule Anoma.InvitesTest do
       assert {:error, %Ecto.Changeset{}} = Invites.create_invite(%{code: "DUPLICATE"})
     end
 
-    # test "claim_invite/2 claims an invite" do
-    #   user = user_fixture()
-    #   invite = invite_fixture()
-    #   assert {:ok, %Invite{} = invite} = Invites.claim_invite(invite, user)
+    test "claim_invite/2 claims an invite" do
+      user = user_fixture()
+      invite = invite_fixture()
+      assert {:ok, %Invite{} = invite} = Invites.claim_invite(invite, user)
 
-    #   # check that the invite is claimed
-    #   invite = Invites.get_invite!(invite.id)
-    #   assert invite.owner_id == user.id
+      # check that the invite is claimed
+      invite = Invites.get_invite!(invite.id) |> Repo.preload(:invitee)
+      assert invite.invitee_id == user.id
+    end
 
-    #   # check that the owner has the invite
-    #   invites = Invites.invites_for(user)
-    #   assert Enum.any?(invites, &(&1.id == invite.id))
-    # end
+    test "claim_invite/2 a claimed invite fails" do
+      user = user_fixture()
+      invite = invite_fixture()
+      assert {:ok, %Invite{} = invite} = Invites.claim_invite(invite, user)
+      assert invite.invitee_id == user.id
 
-    # test "claim_invite/2 a claimed invite fails" do
-    #   user = user_fixture()
-    #   invite = invite_fixture()
-    #   assert {:ok, %Invite{} = invite} = Invites.claim_invite(invite, user)
-    #   assert invite.owner_id == user.id
+      # claim second time and expect an error
+      other_user = user_fixture()
+      assert {:error, :invite_already_claimed} = Invites.claim_invite(invite, other_user)
 
-    #   # claim second time and expect an error
-    #   other_user = user_fixture()
-    #   assert {:error, :invite_already_claimed} = Invites.claim_invite(invite, other_user)
-
-    #   # ensure the invite is still claimed by the first user
-    #   invite = Invites.get_invite!(invite.id)
-    #   assert invite.owner_id == user.id
-    # end
+      # ensure the invite is still claimed by the first user
+      invite = Invites.get_invite!(invite.id)
+      assert invite.invitee_id == user.id
+    end
   end
 end

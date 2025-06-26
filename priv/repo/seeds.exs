@@ -11,12 +11,16 @@
 # and so on) as they will fail if something goes wrong.
 
 # Script for populating the database with invite codes
-alias Anoma.Repo
+alias Anoma.Accounts
 alias Anoma.Accounts.Invite
+alias Anoma.Invites
+
+invites = 10
+users = 10
 
 if Mix.env() == :dev do
   # Function to generate a unique invite code
-  defmodule InviteCodeGenerator do
+  defmodule Generator do
     def generate_code do
       # Generate a random string of 8 characters
       random = :crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)
@@ -25,18 +29,21 @@ if Mix.env() == :dev do
       # Combine and format
       "INV-#{random}-#{timestamp}"
     end
+
+    def generate_user do
+      Accounts.create_user()
+    end
   end
 
-  # Create 10 unique invite codes
-  IO.puts("Creating 5000 invite codes...")
+  # generate the users
+  for _ <- 1..users do
+    {:ok, user} = Generator.generate_user()
 
-  Enum.each(1..10, fn _ ->
-    code = InviteCodeGenerator.generate_code()
-
-    %Invite{}
-    |> Invite.changeset(%{code: code})
-    |> Repo.insert!()
-  end)
-
-  IO.puts("Successfully created 5000 invite codes!")
+    # generate ivites for user
+    for _ <- 1..invites do
+      code = Generator.generate_code()
+      {:ok, invite} = Invites.create_invite(%{code: code})
+      Invites.assign_invite(invite, user)
+    end
+  end
 end
