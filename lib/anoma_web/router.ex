@@ -2,6 +2,9 @@ defmodule AnomaWeb.Router do
   use AnomaWeb, :router
 
   pipeline :api do
+    plug CORSPlug
+
+    # plug CORSPlug, origin: ["http://localhost:5173", "http://localhost:4000", "https://anomaland.netlify.app"]
     plug :accepts, ["json"]
     plug :fetch_session
     plug OpenApiSpex.Plug.PutApiSpec, module: AnomaWeb.ApiSpec
@@ -9,6 +12,9 @@ defmodule AnomaWeb.Router do
 
   # Authenticated API pipeline
   pipeline :authenticated_api do
+    plug CORSPlug
+
+    # plug CORSPlug, origin: ["http://localhost:5173", "http://localhost:4000", "https://anomaland.netlify.app"]
     plug :accepts, ["json"]
     plug AnomaWeb.Plugs.AuthPlug
   end
