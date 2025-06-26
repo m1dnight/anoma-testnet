@@ -20,7 +20,7 @@ sed -i "s/twitterClientId: '[^']*'/twitterClientId: '$TWITTER_CLIENT_ID'/" priv/
 Start a Docker database for this repository.
 
 ```shell
-cd scripts && docker compose up -d db && cd ..
+docker compose --file scripts/docker-compose.yml up -d db
 ```
 
 Run the application and open the webpage.
@@ -36,7 +36,7 @@ iex -S mix phx.server
 
 Make sure you update the `TWITTER_CLIENT*` values in the `docker-compose.yml` file.
 ```shell
-cd scripts && docker compose --build up
+docker compose --file scripts/docker-compose.yml up
 ```
 
 
