@@ -25,11 +25,14 @@ defmodule AnomaWeb.Api.InviteController do
       200 => Operation.response("Failure", "application/json", JsonSuccess)
     }
 
+  @doc """
+  Lets a user claim an invite code
+  """
   def redeem_invite(conn, %{"invite_code" => invite_code}) do
     with user when not is_nil(user) <- Map.get(conn.assigns, :current_user),
          invite when not is_nil(invite) <- Invites.get_invite_by_code!(invite_code),
          {:ok, %Invite{}} <- Invites.claim_invite(invite, user) do
-      json(conn, %{success: true})
+      render(conn, :redeem_invite)
     end
   end
 end

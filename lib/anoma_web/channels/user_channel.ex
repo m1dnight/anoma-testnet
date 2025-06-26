@@ -20,7 +20,7 @@ defmodule AnomaWeb.UserChannel do
          # fetch the user id from the token
          user_id <- Map.get(token, "user_id"),
          # query the user to ensure it really exists in the backend
-         {:ok, user} <- Accounts.get_user(user_id) do
+         user when not is_nil(user) <- Accounts.get_user(user_id) do
       # the user in the token should be the same as the user id in the channel
       if "#{user_id}" == channel_user_id do
         # subscribe to updates from the database
@@ -33,7 +33,7 @@ defmodule AnomaWeb.UserChannel do
       end
     else
       # the user did not exist in the backend
-      {:error, :not_found} ->
+      nil ->
         {:error, %{reason: "user not found"}}
     end
   end

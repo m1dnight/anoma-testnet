@@ -20,6 +20,7 @@ defmodule Anoma.Accounts.DailyPoints do
       [%DailyPoint{}, ...]
 
   """
+  @spec list_daily_points() :: [DailyPoint.t()]
   def list_daily_points do
     Repo.all(DailyPoint) |> Repo.preload(:user)
   end
@@ -38,6 +39,7 @@ defmodule Anoma.Accounts.DailyPoints do
       ** (Ecto.NoResultsError)
 
   """
+  @spec get_daily_point!(binary()) :: DailyPoint.t()
   def get_daily_point!(id) do
     Repo.get!(DailyPoint, id)
     |> Repo.preload(:user)

@@ -21,6 +21,7 @@ defmodule Anoma.Invites do
       [%Invite{}, ...]
 
   """
+  @spec list_invites() :: [Invite.t()]
   def list_invites do
     Repo.all(Invite)
   end
@@ -36,6 +37,7 @@ defmodule Anoma.Invites do
       iex> get_invite_by_code!("nonexistent")
       nil
   """
+  @spec get_invite_by_code!(String.t()) :: Invite.t()
   def get_invite_by_code!(code) do
     Repo.get_by!(Invite, code: code)
   end
@@ -54,6 +56,7 @@ defmodule Anoma.Invites do
       ** (Ecto.NoResultsError)
 
   """
+  @spec get_invite!(binary()) :: Invite.t()
   def get_invite!(id), do: Repo.get!(Invite, id)
 
   @doc """
@@ -68,6 +71,7 @@ defmodule Anoma.Invites do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec create_invite(map()) :: {:ok, Invite.t()} | {:error, Ecto.Changeset.t()}
   def create_invite(attrs \\ %{}) do
     %Invite{}
     |> Invite.changeset(attrs)
@@ -86,6 +90,7 @@ defmodule Anoma.Invites do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec update_invite(Invite.t(), map()) :: {:ok, Invite.t()} | {:error, Ecto.Changeset.t()}
   def update_invite(%Invite{} = invite, attrs) do
     invite
     |> Invite.changeset(attrs)
@@ -103,25 +108,21 @@ defmodule Anoma.Invites do
       iex> claim_invite(invite, user)
       {:error, %Ecto.Changeset{}}
   """
+  @spec claim_invite(Invite.t(), User.t()) :: {:ok, Invite.t()} | {:error, atom()}
   def claim_invite(%Invite{} = invite, %User{} = user) do
     Repo.transaction(fn ->
       # ensure invite is not claimed
       invite = get_invite!(invite.id)
       user = Accounts.get_user!(user.id)
 
-      cond do
-        invite.invitee_id != nil ->
-          Repo.rollback(:invite_already_claimed)
-
-        # user.invite != nil ->
-        #   Repo.rollback(:user_already_claimed_invite)
-
-        true ->
-          invite
-          |> Repo.preload(:invitee)
-          |> Invite.changeset(%{})
-          |> Ecto.Changeset.put_assoc(:invitee, user)
-          |> Repo.update()
+      if invite.invitee_id != nil do
+        Repo.rollback(:invite_already_claimed)
+      else
+        invite
+        |> Repo.preload(:invitee)
+        |> Invite.changeset(%{})
+        |> Ecto.Changeset.put_assoc(:invitee, user)
+        |> Repo.update()
       end
     end)
     |> case do
@@ -145,6 +146,7 @@ defmodule Anoma.Invites do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec delete_invite(Invite.t()) :: {:ok, Invite.t()} | {:error, Ecto.Changeset.t()}
   def delete_invite(%Invite{} = invite) do
     Repo.delete(invite)
   end
@@ -158,6 +160,7 @@ defmodule Anoma.Invites do
       %Ecto.Changeset{data: %Invite{}}
 
   """
+  @spec change_invite(Invite.t(), map()) :: Ecto.Changeset.t()
   def change_invite(%Invite{} = invite, attrs \\ %{}) do
     Invite.changeset(invite, attrs)
   end
@@ -171,6 +174,7 @@ defmodule Anoma.Invites do
       [%Invite{}]
 
   """
+  @spec invites_for(User.t()) :: [Invite.t()]
   def invites_for(%User{} = user) do
     user
     |> Repo.preload(:invites)
@@ -180,6 +184,7 @@ defmodule Anoma.Invites do
   @doc """
   Assigns an existing invite to an existing user.
   """
+  @spec assign_invite(Invite.t(), User.t()) :: {:ok, Invite.t()} | {:error, atom()}
   def assign_invite(invite, user) do
     Repo.transaction(fn ->
       # fetch the invite to have the latest version
@@ -188,15 +193,13 @@ defmodule Anoma.Invites do
       # ensure invite is not claimed by another user
       user = Accounts.get_user!(user.id)
 
-      cond do
-        invite.owner_id != nil ->
-          Repo.rollback(:invite_already_assigned)
-
-        true ->
-          invite
-          |> Ecto.Changeset.change()
-          |> Ecto.Changeset.put_assoc(:owner, user)
-          |> Repo.update()
+      if invite.owner_id != nil do
+        Repo.rollback(:invite_already_assigned)
+      else
+        invite
+        |> Ecto.Changeset.change()
+        |> Ecto.Changeset.put_assoc(:owner, user)
+        |> Repo.update()
       end
     end)
     |> case do

@@ -20,6 +20,7 @@ defmodule Anoma.Accounts do
       [%User{}, ...]
 
   """
+  @spec list_users() :: [User.t()]
   def list_users do
     Repo.all(User)
   end
@@ -38,6 +39,7 @@ defmodule Anoma.Accounts do
       ** (Ecto.NoResultsError)
 
   """
+  @spec get_user!(binary()) :: User.t()
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
@@ -54,6 +56,7 @@ defmodule Anoma.Accounts do
       {:error, :not_found}
 
   """
+  @spec get_user(binary()) :: User.t() | nil
   def get_user(id) do
     Repo.get(User, id)
   end
@@ -70,6 +73,7 @@ defmodule Anoma.Accounts do
       nil
 
   """
+  @spec get_user_by_twitter_id(String.t()) :: User.t() | nil
   def get_user_by_twitter_id(twitter_id) do
     Repo.get_by(User, twitter_id: twitter_id)
   end
@@ -83,6 +87,7 @@ defmodule Anoma.Accounts do
       {:ok, %User{}}
 
   """
+  @spec create_basic_user(map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def create_basic_user(attrs \\ %{}) do
     default_attrs = %{
       points: 0,
@@ -175,6 +180,7 @@ defmodule Anoma.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec create_user(map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def create_user(attrs \\ %{}) do
     %User{}
     |> User.changeset(attrs)
@@ -193,6 +199,7 @@ defmodule Anoma.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec update_user(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user(%User{} = user, attrs) do
     user
     |> User.changeset(attrs)
@@ -211,6 +218,8 @@ defmodule Anoma.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec update_user_eth_address(User.t(), String.t()) ::
+          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user_eth_address(%User{} = user, eth_address) do
     user
     |> User.changeset(%{eth_address: eth_address})
@@ -229,6 +238,7 @@ defmodule Anoma.Accounts do
       {:ok, %User{}}
 
   """
+  @spec add_points_to_user(User.t(), integer()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def add_points_to_user(%User{} = user, points) when is_integer(points) do
     current_points = user.points || 0
     new_points = current_points + points
@@ -250,6 +260,7 @@ defmodule Anoma.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
+  @spec delete_user(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def delete_user(%User{} = user) do
     Repo.delete(user)
   end
@@ -263,6 +274,7 @@ defmodule Anoma.Accounts do
       %Ecto.Changeset{data: %User{}}
 
   """
+  @spec change_user(User.t(), map()) :: Ecto.Changeset.t()
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end

@@ -131,18 +131,7 @@ defmodule AnomaWeb.Api.UserController do
          {:ok, db_user} <-
            Accounts.create_or_update_user_with_twitter_data(user_meta_data, access_token),
          token <- AuthPlug.generate_jwt_token(db_user) do
-      json(conn, %{
-        success: true,
-        user: db_user,
-        jwt: token
-      })
-    else
-      {:error, reason} ->
-        Logger.error("Error authenticating user: #{inspect(reason)}")
-
-        conn
-        |> put_status(:bad_request)
-        |> json(%{success: false, error: reason})
+      render(conn, :auth, user: db_user, jwt: token)
     end
   end
 
@@ -153,18 +142,7 @@ defmodule AnomaWeb.Api.UserController do
     # update the user's ethereum address
     with user <- conn.assigns.current_user,
          {:ok, _user} <- Accounts.update_user_eth_address(user, eth_address) do
-      json(conn, %{success: true})
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        error_message =
-          Ecto.Changeset.traverse_errors(changeset, fn {msg, _} ->
-            msg
-          end)
-          |> Enum.map_join(" ", fn {key, errs} ->
-            "#{key}: #{Enum.join(errs, ",")}"
-          end)
-
-        {:error, error_message}
+      render(conn, :update_eth)
     end
   end
 

@@ -55,19 +55,13 @@ defmodule AnomaWeb.Api.FitcoinController do
     user = conn.assigns.current_user
     {:ok, user} = Accounts.Fitcoin.add_fitcoin(user)
 
-    json(conn, %{
-      success: true,
-      fitcoins: user.fitcoins
-    })
+    render(conn, :balance, fitcoins: user.fitcoins)
   end
 
   def balance(conn, %{}) do
     user = conn.assigns.current_user
     {:ok, balance} = Accounts.Fitcoin.balance(user)
 
-    json(conn, %{
-      success: true,
-      fitcoins: balance
-    })
+    render(conn, :balance, fitcoins: balance)
   end
 end

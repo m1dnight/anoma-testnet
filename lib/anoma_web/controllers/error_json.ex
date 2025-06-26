@@ -8,8 +8,16 @@ defmodule AnomaWeb.ErrorJSON do
     %{success: false, error: error}
   end
 
-  def render("404.json", _assigns) do
+  def render("404.json", _) do
     %{success: false, error: "not found"}
+  end
+
+  def render("422.json", %{error: error}) do
+    %{success: false, error: error}
+  end
+
+  def render("500.json", %{error: error}) do
+    %{success: false, error: error}
   end
 
   def render(template, _assigns) do
