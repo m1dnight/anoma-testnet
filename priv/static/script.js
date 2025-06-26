@@ -107,7 +107,7 @@ async function addFitcoin() {
 
   // send code and code_verified to the backend to let it fetch a token for our account
   try {
-    const response = await fetch(`https://anoma.genserver.be/api/v1/fitcoin`, {
+    const response = await fetch(`${CONFIG.backendUrl}/api/v1/fitcoin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

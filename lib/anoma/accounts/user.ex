@@ -14,6 +14,7 @@ defmodule Anoma.Accounts.User do
     field :email, :string
     field :confirmed_at, :utc_datetime
     field :points, :integer, default: 0
+    field :gas, :integer, default: 0
     field :eth_address, :string
 
     # Fitcoin
@@ -47,6 +48,7 @@ defmodule Anoma.Accounts.User do
       :email,
       :eth_address,
       :points,
+      :gas,
       :twitter_avatar_url,
       :twitter_bio,
       :twitter_id,
