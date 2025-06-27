@@ -26,7 +26,8 @@ defmodule Anoma.Application do
          {DailyPoint, :inserted},
          {User, :updated}
        ]},
-      Anoma.Scheduler
+      Anoma.Scheduler,
+      Anoma.Coinbase
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

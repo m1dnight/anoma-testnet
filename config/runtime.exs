@@ -20,6 +20,9 @@ require Logger
 config :anoma, AnomaWeb.Endpoint, server: true
 # end
 
+coingecko_api =
+  System.get_env("COINGECKO_API") || Logger.warning("COINGECKO_API is not set")
+
 twitter_client_id =
   System.get_env("TWITTER_CLIENT_ID") || Logger.warning("TWITTER_CLIENT_ID is not set")
 
@@ -28,7 +31,8 @@ twitter_client_secret =
 
 config :anoma,
   twitter_client_id: twitter_client_id,
-  twitter_client_secret: twitter_client_secret
+  twitter_client_secret: twitter_client_secret,
+  coingecko_api: coingecko_api
 
 if config_env() == :prod do
   twitter_client_id = System.get_env("TWITTER_CLIENT_ID") || raise("TWITTER_CLIENT_ID is not set")
@@ -38,7 +42,8 @@ if config_env() == :prod do
 
   config :anoma,
     twitter_client_id: twitter_client_id,
-    twitter_client_secret: twitter_client_secret
+    twitter_client_secret: twitter_client_secret,
+    coingecko_api: coingecko_api
 
   database_url =
     System.get_env("DATABASE_URL") ||

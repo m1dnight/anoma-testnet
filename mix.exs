@@ -48,7 +48,8 @@ defmodule Anoma.MixProject do
       {:open_api_spex, "~> 3.21"},
       {:ecto_watch, "~> 0.11.1"},
       {:quantum, "~> 3.5.3"},
-      {:cors_plug, "~> 3.0"}
+      {:cors_plug, "~> 3.0"},
+      {:websockex, "~> 0.4.3"}
     ]
   end
 
