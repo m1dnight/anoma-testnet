@@ -29,6 +29,14 @@ defmodule Anoma.Accounts.CouponsTest do
       assert {:ok, %Coupon{} = _coupon} = Coupons.create_coupon(valid_attrs)
     end
 
+    test "create_coupon/1 with valid data creates a coupon that is not used" do
+      owner = user_fixture()
+      valid_attrs = %{owner_id: owner.id}
+
+      assert {:ok, %Coupon{} = coupon} = Coupons.create_coupon(valid_attrs)
+      refute coupon.used
+    end
+
     test "create_coupon/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Coupons.create_coupon(@invalid_attrs)
     end
@@ -59,6 +67,31 @@ defmodule Anoma.Accounts.CouponsTest do
       owner = user_fixture()
       coupon = coupon_fixture(%{owner_id: owner.id})
       assert %Ecto.Changeset{} = Coupons.change_coupon(coupon)
+    end
+
+    test "use_coupon/1 marks a coupon as used" do
+      owner = user_fixture()
+      coupon = coupon_fixture(%{owner_id: owner.id})
+
+      # mark the coupon as used
+      {:ok, coupon} = Coupons.use_coupon(coupon)
+
+      # verify the coupon state
+      coupon = Coupons.get_coupon!(coupon.id)
+      assert coupon.used
+    end
+
+    test "use_coupon/1 cannot be used on a used coupon" do
+      owner = user_fixture()
+      coupon = coupon_fixture(%{owner_id: owner.id})
+
+      # mark the coupon as used
+      {:ok, coupon} = Coupons.use_coupon(coupon)
+      {:error, :coupon_already_used} = Coupons.use_coupon(coupon)
+
+      # verify the coupon state
+      coupon = Coupons.get_coupon!(coupon.id)
+      assert coupon.used
     end
   end
 end

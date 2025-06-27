@@ -10,23 +10,34 @@ defmodule AnomaWeb.Api.CouponController do
   action_fallback AnomaWeb.FallbackController
 
   use OpenApiSpex.ControllerSpecs
-  tags ["daily coupons"]
+  tags ["Daily Coupons"]
 
   operation :list,
     security: [%{"authorization" => []}],
-    summary: "Return the current fitcoin balance",
-    parameters: [],
+    summary: "List of available coupons",
+    request_body: {},
     responses: %{
       200 =>
         {"success", "application/json",
          %Schema{
            type: :object,
            properties: %{
-             success: %Schema{type: :boolean, description: "success message", example: false},
-             fitcoins: %Schema{type: :integer, description: "fitcoin balance", example: 123}
+             coupons: %Schema{
+               type: :array,
+               items: %Schema{
+                 type: :object,
+                 properties: %{
+                   id: %Schema{
+                     type: :string,
+                     description: "coupon id",
+                     example: "846621ca-e843-426c-9ccd-09e1d57f8929"
+                   }
+                 }
+               }
+             }
            }
          }},
-      400 => {"Failed to authenticate", "application/json", JsonError}
+      400 => {"Generic error", "application/json", JsonError}
     }
 
   @doc """
@@ -34,6 +45,17 @@ defmodule AnomaWeb.Api.CouponController do
   """
   @spec list(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def list(conn, %{}) do
+    user = conn.assigns.current_user
+    coupons = Coupons.list_coupons(user)
+
+    render(conn, :coupons, coupons: coupons)
+  end
+
+  @doc """
+  Consumes a coupon
+  """
+  @spec list(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def list(conn, %{"id" => coupon_id}) do
     user = conn.assigns.current_user
     coupons = Coupons.list_coupons(user)
 

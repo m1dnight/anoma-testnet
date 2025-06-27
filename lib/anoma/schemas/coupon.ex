@@ -13,13 +13,16 @@ defmodule Anoma.Accounts.Coupon do
     # a coupon belongs to a user
     belongs_to :owner, Anoma.Accounts.User
 
+    # whether the coupon is used or not
+    field :used, :boolean, default: false
+
     timestamps(type: :utc_datetime)
   end
 
   @doc false
   def changeset(coupon, attrs) do
     coupon
-    |> cast(attrs, [:owner_id])
+    |> cast(attrs, [:owner_id, :used])
     |> validate_required([:owner_id])
   end
 end

@@ -90,6 +90,39 @@ defmodule Anoma.Accounts.Coupons do
     |> Repo.update()
   end
 
+    @doc """
+  Updates a coupon.
+
+  ## Examples
+
+      iex> update_coupon(coupon, %{field: new_value})
+      {:ok, %Coupon{}}
+
+      iex> update_coupon(coupon, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def use_coupon(%Coupon{} = coupon) do
+    Repo.transaction(fn ->
+      # ensure invite is not claimed
+      coupon = get_coupon!(coupon.id)
+      if coupon.used do
+        Repo.rollback(:coupon_already_used)
+      else
+        coupon
+        |> Coupon.changeset(%{used: true})
+        |> Repo.update()
+      end
+    end)
+    |> case do
+      {:ok, res} ->
+        res
+
+      err ->
+        err
+    end
+  end
+
   @doc """
   Deletes a coupon.
 
