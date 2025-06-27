@@ -20,8 +20,11 @@ require Logger
 config :anoma, AnomaWeb.Endpoint, server: true
 # end
 
-coingecko_api =
-  System.get_env("COINGECKO_API") || Logger.warning("COINGECKO_API is not set")
+coinbase_api_key =
+  System.get_env("COINBASE_API_KEY") || Logger.warning("COINBASE_API_KEY is not set")
+
+coinbase_secret =
+  System.get_env("COINBASE_SECRET") || Logger.warning("COINBASE_SECRET is not set")
 
 twitter_client_id =
   System.get_env("TWITTER_CLIENT_ID") || Logger.warning("TWITTER_CLIENT_ID is not set")
@@ -32,9 +35,16 @@ twitter_client_secret =
 config :anoma,
   twitter_client_id: twitter_client_id,
   twitter_client_secret: twitter_client_secret,
-  coingecko_api: coingecko_api
+  coinbase_api_key: coinbase_api_key,
+  coinbase_secret: coinbase_secret
 
 if config_env() == :prod do
+  coinbase_api_key =
+    System.get_env("COINBASE_API_KEY") || raise("COINBASE_API_KEY is not set")
+
+  coinbase_secret =
+    System.get_env("COINBASE_SECRET") || raise("COINBASE_SECRET is not set")
+
   twitter_client_id = System.get_env("TWITTER_CLIENT_ID") || raise("TWITTER_CLIENT_ID is not set")
 
   twitter_client_secret =
@@ -43,7 +53,8 @@ if config_env() == :prod do
   config :anoma,
     twitter_client_id: twitter_client_id,
     twitter_client_secret: twitter_client_secret,
-    coingecko_api: coingecko_api
+    coinbase_api_key: coinbase_api_key,
+    coinbase_secret: coinbase_secret
 
   database_url =
     System.get_env("DATABASE_URL") ||
