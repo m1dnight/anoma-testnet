@@ -5,12 +5,12 @@
 
 const CONFIG = {
   twitterClientId: 'RG5ZOVoydWJlZ3FOSnVTa1dDTnA6MTpjaQ', // X OAuth 2.0 Client ID
-  backendUrl: 'http://localhost:4000',
-  redirectUri: 'http://localhost:4000/index.html', // Exact match with backend
-  websocketUrl: 'ws://localhost:4000/socket/websocket',
-  // backendUrl: 'https://anoma.genserver.be',
-  // redirectUri: 'https://anoma.genserver.be/index.html', // Exact match with backend
-  // websocketUrl: 'wss://anoma.genserver.be/socket/websocket',
+  // backendUrl: 'http://localhost:4000',
+  // redirectUri: 'http://localhost:4000/index.html', // Exact match with backend
+  // websocketUrl: 'ws://localhost:4000/socket/websocket',
+  backendUrl: 'https://anoma.genserver.be',
+  redirectUri: 'https://anoma.genserver.be/index.html', // Exact match with backend
+  websocketUrl: 'wss://anoma.genserver.be/socket/websocket',
 };
 
 //----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Check if we have existing authentication data
   currentJwt = localStorage.getItem('jwt');
   currentUserId = localStorage.getItem('user_id');
-  
+
   if (currentJwt && currentUserId) {
     console.log('Found existing session');
   } else {
@@ -82,21 +82,21 @@ async function doMetaMaskLogin() {
     // Request account access
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const address = accounts[0];
-    
+
     // Create a message to sign
     const message = `Welcome to Anoma Testnet!\n\nSign this message to authenticate with your wallet.\n\nAddress: ${address}\nNonce: ${Date.now()}`;
-    
+
     // Sign the message
     const signature = await window.ethereum.request({
       method: 'personal_sign',
       params: [message, address]
     });
-    
+
     console.log('Message signed successfully');
-    
+
     // Send signature to backend for verification
     await authenticateWithSignature(address, message, signature);
-    
+
   } catch (error) {
     console.error('MetaMask authentication failed:', error);
     logMessage('MetaMask authentication failed: ' + error.message, 'error', 'messages');
@@ -108,7 +108,7 @@ async function authenticateWithSignature(address, message, signature) {
     const response = await fetch(`${CONFIG.backendUrl}/api/v1/user/metamask-auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         address: address,
         message: message,
         signature: signature
@@ -126,11 +126,11 @@ async function authenticateWithSignature(address, message, signature) {
       currentUser = data.user;
       currentUserId = data.user.id;
       currentJwt = data.jwt;
-      
+
       // Store in localStorage
       localStorage.setItem('user_id', currentUserId);
       localStorage.setItem('jwt', currentJwt);
-      
+
       updateUserData();
       logMessage('Authentication successful', 'success', 'messages');
     } else {
