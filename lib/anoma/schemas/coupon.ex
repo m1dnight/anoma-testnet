@@ -9,7 +9,8 @@ defmodule Anoma.Accounts.Coupon do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   typed_schema "coupons" do
-    @derive {Jason.Encoder, except: [:__meta__, :__struct__, :owner, :owner_id,  :inserted_at, :updated_at]}
+    @derive {Jason.Encoder,
+             except: [:__meta__, :__struct__, :owner, :owner_id, :inserted_at, :updated_at]}
     # a coupon belongs to a user
     belongs_to :owner, Anoma.Accounts.User
 

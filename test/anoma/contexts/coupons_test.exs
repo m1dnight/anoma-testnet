@@ -93,5 +93,18 @@ defmodule Anoma.Accounts.CouponsTest do
       coupon = Coupons.get_coupon!(coupon.id)
       assert coupon.used
     end
+
+    test "use_coupon/1 cannot be used on somebody elses coupon" do
+      owner = user_fixture()
+      coupon = coupon_fixture(%{owner_id: owner.id})
+
+      # mark the coupon as used
+      {:ok, coupon} = Coupons.use_coupon(coupon)
+      {:error, :coupon_already_used} = Coupons.use_coupon(coupon)
+
+      # verify the coupon state
+      coupon = Coupons.get_coupon!(coupon.id)
+      assert coupon.used
+    end
   end
 end

@@ -5,6 +5,7 @@ defmodule AnomaWeb.Api.CouponController do
 
   alias Anoma.Accounts.Coupons
   alias AnomaWeb.ApiSpec.Schemas.JsonError
+  alias AnomaWeb.ApiSpec.Schemas.JsonSuccess
   alias OpenApiSpex.Schema
 
   action_fallback AnomaWeb.FallbackController
@@ -40,6 +41,23 @@ defmodule AnomaWeb.Api.CouponController do
       400 => {"Generic error", "application/json", JsonError}
     }
 
+  operation :use,
+    security: [%{"authorization" => []}],
+    summary: "Use a coupon",
+    request_body: {},
+    parameters: [
+      id: [
+        in: :path,
+        description: "coupon id",
+        type: :string,
+        example: "9cb7c823-a2c3-4a3e-90c2-520125e084d2"
+      ]
+    ],
+    responses: %{
+      200 => {"Coupon used", "application/json", JsonSuccess},
+      400 => {"Generic error", "application/json", JsonError}
+    }
+
   @doc """
   Returns the list of coupons.
   """
@@ -54,11 +72,20 @@ defmodule AnomaWeb.Api.CouponController do
   @doc """
   Consumes a coupon
   """
-  @spec list(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def list(conn, %{"id" => coupon_id}) do
+  @spec use(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def use(conn, %{"id" => coupon_id}) do
     user = conn.assigns.current_user
-    coupons = Coupons.list_coupons(user)
 
-    render(conn, :coupons, coupons: coupons)
+    # make sure the coupon is owned by this user.
+    coupon = Coupons.get_coupon!(coupon_id)
+
+    # if this coupon is not owned by this user, can't consume it.
+    if coupon.owner_id == user.id do
+      {:ok, coupon} = Coupons.use_coupon(coupon)
+
+      render(conn, :use, coupon: coupon)
+    else
+      {:error, :invalid_coupon}
+    end
   end
 end

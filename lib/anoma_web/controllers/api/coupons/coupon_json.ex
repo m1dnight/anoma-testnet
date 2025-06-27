@@ -7,6 +7,13 @@ defmodule AnomaWeb.Api.CouponJSON do
   end
 
   @doc """
+  Returns success upon using a coupon
+  """
+  def use(%{coupon: _coupon}) do
+    %{success: true}
+  end
+
+  @doc """
   Renders a single coupon.
   """
   def coupon(coupon) do

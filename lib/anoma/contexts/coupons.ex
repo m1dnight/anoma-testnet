@@ -90,7 +90,7 @@ defmodule Anoma.Accounts.Coupons do
     |> Repo.update()
   end
 
-    @doc """
+  @doc """
   Updates a coupon.
 
   ## Examples
@@ -106,6 +106,7 @@ defmodule Anoma.Accounts.Coupons do
     Repo.transaction(fn ->
       # ensure invite is not claimed
       coupon = get_coupon!(coupon.id)
+
       if coupon.used do
         Repo.rollback(:coupon_already_used)
       else

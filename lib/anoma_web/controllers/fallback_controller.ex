@@ -7,6 +7,7 @@ defmodule AnomaWeb.FallbackController do
   use AnomaWeb, :controller
 
   def call(conn, assigns) do
+    IO.inspect(assigns, label: "call fallback")
     _call(conn, assigns)
   end
 
@@ -23,6 +24,15 @@ defmodule AnomaWeb.FallbackController do
   def _call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
+    |> put_view(html: AnomaWeb.ErrorHTML, json: AnomaWeb.ErrorJSON)
+    |> render(:"401")
+  end
+
+  # This clause is an example of how to handle resources that cannot be found.
+  def _call(conn, {:error, :invalid_coupon}) do
+    conn
+    |> put_status(:unauthorized)
+    |> assign(:error, "invalid coupon")
     |> put_view(html: AnomaWeb.ErrorHTML, json: AnomaWeb.ErrorJSON)
     |> render(:"401")
   end
