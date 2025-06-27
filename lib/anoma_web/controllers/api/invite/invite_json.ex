@@ -17,7 +17,6 @@ defmodule AnomaWeb.Api.InviteJSON do
   Renders a single invite.
   """
   def invite(invite) do
-
     %{code: invite.code, claimed?: invite.invitee_id != nil}
   end
 end

@@ -58,6 +58,11 @@ defmodule AnomaWeb.Router do
       get "/balance", FitcoinController, :balance
     end
 
+    # /api/v1/coupons
+    scope "/coupons" do
+      get "/", CouponController, :list
+    end
+
     # /api/v1/invite
     scope "/invite" do
       get "/", InviteController, :list_invites

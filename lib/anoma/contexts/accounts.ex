@@ -288,12 +288,13 @@ defmodule Anoma.Accounts do
       {:ok, %User{}}
 
   """
-  @spec create_or_update_user_with_eth_address(String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_or_update_user_with_eth_address(String.t()) ::
+          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def create_or_update_user_with_eth_address(eth_address) do
     case Repo.get_by(User, eth_address: eth_address) do
       nil ->
         create_user_with_eth_address(eth_address)
-      
+
       existing_user ->
         {:ok, existing_user}
     end

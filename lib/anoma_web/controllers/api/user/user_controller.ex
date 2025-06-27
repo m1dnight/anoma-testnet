@@ -185,7 +185,7 @@ defmodule AnomaWeb.Api.UserController do
     end
   end
 
-  defp verify_ethereum_signature(message, signature, expected_address) do
+  defp verify_ethereum_signature(_message, _signature, expected_address) do
     # For now, we'll trust the address provided by the frontend
     # In a production environment, you would want to verify the signature
     # using a proper Ethereum signature verification library
