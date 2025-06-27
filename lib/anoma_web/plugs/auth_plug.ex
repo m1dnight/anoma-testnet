@@ -23,7 +23,11 @@ defmodule AnomaWeb.Plugs.AuthPlug do
           {:ok, payload} ->
             case load_user(payload) do
               {:ok, user} ->
-                assign(conn, :current_user, user)
+                invited? = user.invite != nil
+
+                conn
+                |> assign(:invited?, invited?)
+                |> assign(:current_user, user)
 
               {:error, _} ->
                 unauthorized(conn)
@@ -72,7 +76,7 @@ defmodule AnomaWeb.Plugs.AuthPlug do
     case payload["user_id"] do
       user_id when is_binary(user_id) ->
         try do
-          user = Accounts.get_user!(user_id)
+          user = Accounts.get_user!(user_id) |> Anoma.Repo.preload(:invite)
           {:ok, user}
         rescue
           Ecto.NoResultsError -> {:error, "User not found"}
