@@ -130,7 +130,7 @@ defmodule AnomaWeb.Api.UserController do
            },
            example: %{success: true, daily_points: [DailyPoint.schema().example]}
          }},
-      401 => {"failed to update ethereum address", "application/json", JsonError}
+      401 => {"failed to fetch daily points", "application/json", JsonError}
     }
 
   operation :claim_point,
@@ -138,11 +138,17 @@ defmodule AnomaWeb.Api.UserController do
     summary: "Claim a daily point with the id of the point",
     parameters: [],
     request_body:
-      {"eth address", "application/json",
+      {"id", "application/json",
        %Schema{
-         type: :string,
+         type: :object,
          description: "point id",
-         example: "0xdeadbeef"
+         properties: %{
+           id: %Schema{
+             type: :string,
+             description: "point id",
+             example: "123456-78919"
+           }
+         }
        }},
     responses: %{
       200 =>
