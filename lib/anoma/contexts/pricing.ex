@@ -54,4 +54,18 @@ defmodule Anoma.Pricing do
     |> Currency.changeset(attrs)
     |> Repo.insert()
   end
+
+  @doc """
+  Given a timestamp, I return the value of the given currency stricly after the given timestamp.
+  E.g., asking for the currency at 12:01 will return the newest value, since the timestamp, or nil if there arent any.
+  """
+  def price_at(currency, timestamp) do
+    from(c in Currency,
+      where: c.currency == ^currency,
+      where: c.inserted_at >= ^timestamp,
+      order_by: {:asc, c.inserted_at},
+      limit: 1
+    )
+    |> Repo.one()
+  end
 end
